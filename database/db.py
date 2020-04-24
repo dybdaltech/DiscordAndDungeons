@@ -28,20 +28,22 @@ class UserTypes(Base):
 class Character(Base):
     __tablename__ = 'characters'
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     alive = Column(Integer, nullable=False)
     level = Column(Integer, nullable=False)
     experience = Column(Integer, nullable=False)
     inventory = Column(Integer)
+    klasse = Column(String, nullable=False)
+    race = Column(String, nullable=False)
 
     def __repr__(self):
-        return f"{self.name} | {self.id} "
+        return f"{self.name} | {self.id} | {self.klasse} | {self.race}"
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key = True)
-    name = Column(String, nullable=False)
-    discord_id = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
+    discord_id = Column(String, nullable=False, unique=True)
     user_type_id = Column(Integer, ForeignKey('user_type.id'))
     #user_type = relationship("UserTypes", back_populates='')
     character_id = Column(Integer, ForeignKey('characters.id'))
@@ -61,7 +63,7 @@ class UserCharater(Base):
 class Attribute(Base):
     __tablename__ = 'attribute'
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
     def __repr__(self):
         return f"{self.name} | {self.description} | {self.id}"
@@ -78,7 +80,7 @@ class Character_Attribute(Base):
 
 Session = sessionmaker(bind=eng)
 session = Session()
-#Base.metadata.create_all(eng)
+Base.metadata.create_all(eng)
 
 def preload(session, base):
     base.metadata.create_all(eng)
