@@ -1,0 +1,15 @@
+swords:
+  wooden_sword:
+    name: Wooden Sword
+    damage: 3
+    rarity: 6
+    base_value: 1
+    description: Its a wooden sword
+  iron_sword:
+    name: Iron Sword
+    damage: 5
+    rarity: 6
+    base_value: 10
+    description: Iron sword, its made of iron.
+
+  
