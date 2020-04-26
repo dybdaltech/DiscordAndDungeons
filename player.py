@@ -1,3 +1,2 @@
-class Player:
-    def __init__(self, ):
-        pass
+
+#Define a game loop

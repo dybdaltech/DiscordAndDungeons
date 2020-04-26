@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 Base = declarative_base()
@@ -35,15 +35,30 @@ class Character(Base):
     inventory = Column(Integer)
     klasse = Column(String, nullable=False)
     race = Column(String, nullable=False)
+    life = Column(Integer, nullable=False)
+    location = Column(Integer, nullable=False)
 
     def __repr__(self):
-        return f"{self.name} | {self.id} | {self.klasse} | {self.race}"
+        if self.alive == 1:
+            return f"Name: {self.name}\n ID: {self.id} \n Class: {self.klasse} \n Race: {self.race} \n Level: {self.level} \n Life: {self.life} \n"
+        else:
+            return f"{self.name} is Dead"
+
+    def take_damage(self, value):
+        self.life = self.life - value
+        if self.life <= 0:
+            self.alive = 0
+            return f"{self.name} died from the wounds"
+        return None
+
+    def get_location(self):
+        return self.location
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = Column(Integer, primary_key = True)
-    name = Column(String, nullable=False, unique=True)
-    discord_id = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    discord_id = Column(String, nullable=False)
     user_type_id = Column(Integer, ForeignKey('user_type.id'))
     #user_type = relationship("UserTypes", back_populates='')
     character_id = Column(Integer, ForeignKey('characters.id'))
@@ -54,7 +69,7 @@ class User(Base):
 class UserCharater(Base):
     __tablename__ = 'user_characters'
     user_character_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey('user.id'))
     character_id = Column(Integer, ForeignKey('characters.id'))
     
     def __repr__(self):
@@ -65,6 +80,7 @@ class Attribute(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
+
     def __repr__(self):
         return f"{self.name} | {self.description} | {self.id}"
 
@@ -77,6 +93,65 @@ class Character_Attribute(Base):
 
     def __repr__(self):
         return f"{self.character_id} | {self.attribute_id} | {self.value} "
+
+class Inventory(Base):
+    __tablename__ = 'inventory'
+    inventory_id = Column(Integer, primary_key=True)
+    character_id = Column(Integer, ForeignKey('characters.id'))
+    item_id = Column(Integer, ForeignKey('item.id'))
+    loottable = Column(Integer)
+
+class Item(Base):
+    __tablename__ = 'item'
+    item_id = Column(Integer, primar_key=True)
+    name = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=False)
+    item_type = Column(String, nullable=False)
+    rarity = Column(Integer, nullable=False)
+    value = Column(Integer, nullable=False)
+    base_armor = Column(Integer)
+    base_damage = Column(Integer)
+
+
+    rarity_levels = 7
+    def __repr__(self):
+        for i in range(0, rarity_levels):
+            if i == self.rarity and i == 1:|
+                rarity_value = 'Common'
+            elif i == self.rarity and i == 2:
+                rarity_value = 'Uncommon'
+            
+            elif i == self.rarity and i == 3:
+                rarity_value = 'Rare'
+            
+            elif i == self.rarity and i == 4:
+                rarity_value = 'Unique'
+            
+            elif i == self.rarity and i == 5:
+                rarity_value = 'Legendary'
+            
+            elif i == self.rarity and i == 6:
+                rarity_value = 'Artifact'
+            
+            elif i == self.rarity and i == 7:
+                rarity_value = 'Quest'
+            else:
+                rarity_value = 'Unknown'
+
+        return f"\n{self.item_id}\n{self.name}\n{self.description}\n{self.item_type}\n{self.rarity}"
+
+class Creature(Base):
+    __tablename__ = 'creature'
+    name = Column(String, nullable=False, unique=True)
+    level = Column(Integer, nullable=False)
+    experience = Column(Integer, nullable=False)
+    inventory = Column(Integer, ForeignKey('inventory.id'))
+    klasse = Column(String, nullable=False)
+    race = Column(String, nullable=False)
+    life = Column(Integer, nullable=False)
+    location = Column(Integer, nullable=False)
+
+
 
 Session = sessionmaker(bind=eng)
 session = Session()
@@ -104,3 +179,15 @@ def get_character_attributes(session, c_id = None):
            for res2 in session.query(Attribute).filter(Attribute.id == res.attribute_id).all():
                print(f"{test.name} has {res.value} in {res2.name}")
 
+def get_target_by_name(session, target_name):
+    res = session.query(Character).filter(Character.name == target_name).one_or_none()
+    print(f"From DB.py {res}")
+    return res
+
+def change_character_by_name(session, character, property, value):
+    try:
+        Character.update().where(Character.name == character).\
+            values(property = value)
+        return True
+    except:
+        raise

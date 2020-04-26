@@ -25,13 +25,14 @@ class Character(commands.Cog):
         calive = 1
         clevel = 1
         cexperience = 1
+        clife = 100
         cclass = "{klasse!r}".format(**flags)
         crace = "{race!r}".format(**flags)
         print(uname, udiscord, utype, cname, cclass, crace)
         try:
             self.session.add_all([
                 db.User(name=str(uname), discord_id=str(udiscord), user_type_id=utype),
-                db.Character(name= cname, alive = calive, level = clevel, experience = cexperience, klasse=cclass, race=crace)
+                db.Character(name= cname, alive = calive, level = clevel, experience = cexperience, klasse=cclass, race=crace, life=clife, location=1000)
             ])
             self.session.commit()
         except:
@@ -60,6 +61,28 @@ class Character(commands.Cog):
 
         await ctx.send(content=result)
 
+    @flags.add_flag("-target")
+    @flags.command(name="attack")
+    async def character_attack(self, ctx, **flags):
+        target = "{target!r}".format(**flags)
+        #Query DB for a possible target within range
+        try:
+            target = db.get_target_by_name(self.session, target)
+            if target == None:
+                await ctx.send(content="Target not found!")
+            else:
+                atk = target.take_damage(10)
+                if atk != None:
+                    await ctx.send(content=atk)
+                else:
+                    await ctx.send(content=target)
+            self.session.commit()
+        except:
+            await ctx.send(content="Error targetting")
+            self.session.rollback()
+            raise
+
+        
 
 db.preload(db.session, db.Base)
 def setup(bot):
