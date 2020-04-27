@@ -134,3 +134,4 @@ pyvenv.cfg
 Scripts/
 pyvenv.cfg
 config.yml
+data.db
