@@ -32,7 +32,7 @@ class Character(commands.Cog):
         try:
             self.session.add_all([
                 db.User(name=str(uname), discord_id=str(udiscord), user_type_id=utype),
-                db.Character(name= cname, alive = calive, level = clevel, experience = cexperience, klasse=cclass, race=crace, life=clife, location=1000)
+                db.Character(name= cname, alive = calive, level = clevel, experience = cexperience, klasse=cclass, race=crace, life=clife, location=1000, current_area=2)
             ])
             self.session.commit()
         except:
@@ -81,8 +81,32 @@ class Character(commands.Cog):
             await ctx.send(content="Error targetting")
             self.session.rollback()
             raise
+    @flags.add_flag('-all')
+    @flags.command(name="area")
+    async def get_available_areas(self, ctx, **flags):
+        #target = "{target!r}".format(**flags)
+        #Query DB for a possible target within range
+        try:
+            areas = db.get_all_areas(self.session)
+            await ctx.send(content=str(areas))
+        except:
+            await ctx.send(content="Error getting areas, check logs")
 
-        
+
+    @flags.add_flag('-destination', alias='-d')
+    @flags.command(name='move')
+    async def move_to_area(self, ctx, **flags):
+        #Get who sent command from ctx.message.author
+        #Find character based on who sent the command
+        #Move the character from current area to new area. 
+        udiscord = ctx.message.author
+        destination = "{destination!r}".format(**flags)
+        character_to_move = db.get_character_by_discord(self.session, udiscord)
+        try:
+            character_to_move.move_to_area(destination)
+            await ctx.send(content=f"")
+        except:
+            await ctx.send(content="Error moving to area")
 
 db.preload(db.session, db.Base)
 def setup(bot):

@@ -1,6 +1,9 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
+
+from database.AreaTypes import AreaTypes
+from Helpers.bools import BoolFromInt
 Base = declarative_base()
 
 eng = create_engine('sqlite:///data.db')
@@ -37,6 +40,7 @@ class Character(Base):
     race = Column(String, nullable=False)
     life = Column(Integer, nullable=False)
     location = Column(Integer, nullable=False)
+    current_area = Column(Integer, ForeignKey('area.area_id'), nullable=False)
 
     def __repr__(self):
         if self.alive == 1:
@@ -53,6 +57,13 @@ class Character(Base):
 
     def get_location(self):
         return self.location
+
+    def get_area(self):
+        return self.current_area
+
+    def move_to_area(self, areaid):
+        self.current_area = areaid
+
 
 class User(Base):
     __tablename__ = 'user'
@@ -98,12 +109,13 @@ class Inventory(Base):
     __tablename__ = 'inventory'
     inventory_id = Column(Integer, primary_key=True)
     character_id = Column(Integer, ForeignKey('characters.id'))
-    item_id = Column(Integer, ForeignKey('item.id'))
+    name = Column(String)
+    item_id = Column(Integer, ForeignKey('item.item_id'))
     loottable = Column(Integer)
 
 class Item(Base):
     __tablename__ = 'item'
-    item_id = Column(Integer, primar_key=True)
+    item_id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
     item_type = Column(String, nullable=False)
@@ -111,12 +123,10 @@ class Item(Base):
     value = Column(Integer, nullable=False)
     base_armor = Column(Integer)
     base_damage = Column(Integer)
-
-
     rarity_levels = 7
     def __repr__(self):
         for i in range(0, rarity_levels):
-            if i == self.rarity and i == 1:|
+            if i == self.rarity and i == 1:
                 rarity_value = 'Common'
             elif i == self.rarity and i == 2:
                 rarity_value = 'Uncommon'
@@ -142,15 +152,25 @@ class Item(Base):
 
 class Creature(Base):
     __tablename__ = 'creature'
+    creature_id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     level = Column(Integer, nullable=False)
-    experience = Column(Integer, nullable=False)
-    inventory = Column(Integer, ForeignKey('inventory.id'))
+    experience = Column(Integer)
+    inventory = Column(Integer, ForeignKey('inventory.inventory_id'))
     klasse = Column(String, nullable=False)
     race = Column(String, nullable=False)
     life = Column(Integer, nullable=False)
     location = Column(Integer, nullable=False)
+    area = Column(Integer, ForeignKey('area.area_id'), nullable=False)
 
+class Area(Base):
+    __tablename__ = 'area'
+    area_id = Column(Integer, primary_key=True)
+    area_type = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f"Area {self.name} has ID {self.area_id} and is of type {self.area_type}"
 
 
 Session = sessionmaker(bind=eng)
@@ -167,6 +187,10 @@ def preload(session, base):
         Attribute(name="Strength", description="Measures how physically strong you are."),
         Attribute(name="Dexterity", description="A measure of your agility and reflexes."),
         Attribute(name="Intelligence", description="How mentally strong and smart you are."),
+        Area(area_type=2, name='The Wild'),
+        Area(area_type=1, name="Haven"),
+        Inventory(name="Zombie Loottable", loottable=1),
+        Creature(name='Zombie', level=1, experience=3, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=3, area=1)
     ])
 
 def get_character_attributes(session, c_id = None):
@@ -174,10 +198,12 @@ def get_character_attributes(session, c_id = None):
         for res, test in session.query(Character_Attribute, Character).join(Character).filter(Character.id == Character_Attribute.character_id).all():
            for res2 in session.query(Attribute).filter(Attribute.id == res.attribute_id).all():
                print(f"{test.name} has {res.value} in {res2.name}")
+               return f"{test.name} has {res.value} in {res2.name}"
     else:
         for res, test in session.query(Character_Attribute, Character).join(Character).filter(Character.id == c_id).all():
            for res2 in session.query(Attribute).filter(Attribute.id == res.attribute_id).all():
                print(f"{test.name} has {res.value} in {res2.name}")
+               return f"{test.name} has {res.value} in {res2.name}"
 
 def get_target_by_name(session, target_name):
     res = session.query(Character).filter(Character.name == target_name).one_or_none()
@@ -191,3 +217,13 @@ def change_character_by_name(session, character, property, value):
         return True
     except:
         raise
+
+def get_all_areas(session):
+    try:
+        return session.query(Area).all()
+    except:
+        return None
+
+def get_character_by_discord(session, username):
+    char = session.query(User).filter(User.discord_id == username).one_or_none()
+    return char
