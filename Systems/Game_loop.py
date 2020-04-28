@@ -1,5 +1,6 @@
 import threading, queue
 from Systems.Resting import takeShortRest
+from Systems.Combat import CombatHandler
 from Systems.log import setup_logging
 from time import sleep as time_sleep
 TEST = 0
@@ -20,7 +21,7 @@ def game_loop(Game, GameIsRunning):
         Game.tick()
         while True:
             try:
-                msg = game_queue.get_nowait()
+                msg = game_queue.get()
             except queue.Empty:
                 msg = {
                     "for":"sys",
@@ -29,7 +30,9 @@ def game_loop(Game, GameIsRunning):
                 break
         if msg["for"] == 'sys':
             print(msg["data"])
-
+            msg.task_done()
+        if msg['for'] == 'combat':
+            CombatHandler(msg['data'], Game.current_time)
         takeShortRest("1", Game)
         time_sleep(1.0)
 

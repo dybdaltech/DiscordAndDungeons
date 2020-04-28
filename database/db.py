@@ -41,7 +41,7 @@ class Character(Base):
     life = Column(Integer, nullable=False)
     location = Column(Integer, nullable=False)
     current_area = Column(Integer, ForeignKey('area.area_id'), nullable=False)
-
+    armor = Column(Integer)
     def __repr__(self):
         if self.alive == 1:
             return f"Name: {self.name}\n ID: {self.id} \n Class: {self.klasse} \n Race: {self.race} \n Level: {self.level} \n Life: {self.life} \n"
@@ -111,7 +111,15 @@ class Inventory(Base):
     character_id = Column(Integer, ForeignKey('characters.id'))
     name = Column(String)
     item_id = Column(Integer, ForeignKey('item.item_id'))
-    loottable = Column(Integer)
+    loottable = Column(Integer) #Bool
+
+    def add_item(self, item):
+        try:
+            self.item_id = item
+            return f"Added {item} to {self.character_id} inventory"
+        except:
+            return f"Failed to add {item} to inventory"
+        
 
 class Item(Base):
     __tablename__ = 'item'
@@ -189,8 +197,10 @@ def preload(session, base):
         Attribute(name="Intelligence", description="How mentally strong and smart you are."),
         Area(area_type=2, name='The Wild'),
         Area(area_type=1, name="Haven"),
-        Inventory(name="Zombie Loottable", loottable=1),
-        Creature(name='Zombie', level=1, experience=3, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=3, area=1)
+        Creature(name='Zombie', level=1, experience=3, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=3, area=1),
+        Item(name="Gold Coin", description="A gold coin", rarity=2, value=1),
+        Inventory(name="Zombie Loottable", item_id=1, loottable=1),
+
     ])
 
 def get_character_attributes(session, c_id = None):
