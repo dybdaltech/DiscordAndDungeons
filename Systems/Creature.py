@@ -12,10 +12,8 @@ class Creature:
         self.location = location
         self.area = area
         self.armor = armor
+        self.actions = []
 
     def save(self):
         cr = db_creature(name=self.name, level=self.level, experience=self.experience, inventory=self.inventory, klasse=self.klasse, race=self.race, life=self.life, location=self.location, area=self.area, armor=self.armor)
         session.save(self)
-
-    def attack(self, target):
-        target.take_damage()

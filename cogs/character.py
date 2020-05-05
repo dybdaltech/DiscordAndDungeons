@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, flags
 from database import db
+from Systems.Game_loop import game_queue
 
 class Character(commands.Cog):
     def __init__(self, bot, session):
@@ -107,6 +108,9 @@ class Character(commands.Cog):
             await ctx.send(content=f"")
         except:
             await ctx.send(content="Error moving to area")
+
+    async def send_message(self, ctx, msg):
+        await ctx.send(content=msg)
 
 db.preload(db.session, db.Base)
 def setup(bot):
