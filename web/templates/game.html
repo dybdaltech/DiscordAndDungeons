@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="game">
+    <ul class="nav nav-tabs">
+        <li class="nav-item"><a class="nav-link active" href="#">Character</a></li>
+        <li class="nav-item"><a class="nav-link " href="#">Inventory</a></li>
+        <li class="nav-item"><a class="nav-link " href="#">Skills</a></li>
+    </ul>
+    <table>
+        <tbody>
+            <tr>
+                <th>
+                    Level
+                    <em></em>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <div id="Character-levels">
+                        "Fighter: 1"
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Race
+                    <em></em>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <div id="Character-race">
+                        "ICON_RACE: Racename"
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Area
+                    <em></em>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <div id="Character-area">
+                        "AREA_ID: AREA_NAME"
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table id="skill_example">
+        <div id="skill_containers">
+            <h3>Skills: </h3>
+            <table>
+                <tr>
+                    <th>Skills</th>
+                    <em></em>
+                </tr>
+                <tr>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                </tr>
+                <tr>                    
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                    <div class="skill">Skill</div>
+                </tr>
+                <tr></tr>
+            </table>
+        </div>
+    </table>
+</div>
+{% endblock %}

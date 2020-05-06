@@ -185,8 +185,8 @@ Session = sessionmaker(bind=eng)
 session = Session()
 Base.metadata.create_all(eng)
 
-def preload(session, base):
-    base.metadata.create_all(eng)
+def preload(session):
+    Base.metadata.create_all(eng)
     session.add_all([
         UserTypes(name="Administrator"),
         UserTypes(name="GameMaster"),
@@ -198,10 +198,10 @@ def preload(session, base):
         Area(area_type=2, name='The Wild'),
         Area(area_type=1, name="Haven"),
         Creature(name='Zombie', level=1, experience=3, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=3, area=1),
-        Creature(name='Zombie', level=1, experience=3, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=2, area=1),
-        Creature(name='Zombie', level=1, experience=3, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=1, area=1),
+        Creature(name='Zombie Lord', level=3, experience=33, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=2, area=1),
+        Creature(name='Zombie Mage', level=2, experience=22, inventory=1, klasse="Undead Brute", race="Undead", life=30, location=1, area=1),
 
-        Item(name="Gold Coin", description="A gold coin", rarity=2, value=1),
+        Item(name="Gold Coin", description="A gold coin",item_type="Currency", rarity=2, value=1),
         Inventory(name="Zombie Loottable", item_id=1, loottable=1),
 
     ])
@@ -231,16 +231,18 @@ def change_character_by_name(session, character, property, value):
     except:
         raise
 
-def get_all_areas(session):
+def get_all_areas(session = session):
     try:
-        return session.query(Area).all()
+        res = session.query(Area).all()
     except:
-        return None
-
+        res = "No available areas"
+    
+    return res
 def get_character_by_discord(session, username):
     char = session.query(User).filter(User.discord_id == username).one_or_none()
     return char
 
-def get_all_creatures():
+def get_all_creatures(session = session):
     creatures = session.query(Creature).all()
+
     return creatures
